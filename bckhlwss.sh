@@ -131,8 +131,34 @@ EOL
 
     # Confirm the output
     echo -e "\e[32mConfiguration has been written to /root/config.toml.\e[0m"  # Green color for UP
+    sleep 0.5
+    clear
+    echo
+    echo -e "\033[33mCreating Backhaul Service\033[0m" #yellow Color
+    echo
+    sleep 0.5
+cat <<EOL > /etc/systemd/system/backhaul.service
+[Unit]
+Description=Backhaul Reverse Tunnel Service
+After=network.target
 
-    
+[Service]
+Type=simple
+ExecStart=/root/backhaul -c /root/config.toml
+Restart=always
+RestartSec=3
+LimitNOFILE=1048576
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+    systemctl daemon-reload
+
+    systemctl enable backhaul.service
+
+    systemctl start backhaul.service
+
 }
 
 ##########

@@ -166,6 +166,8 @@ EOL
 ##########
 Kharej() {
     clear
+        echo "This option is not implemented yet."
+
 }
 
 while true; do

@@ -1,3 +1,3 @@
 ```
-bash <(curl -Ls https://raw.githubusercontent.com/Argo160/stl/master/bckhlwss.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/Argo160/bckhl-wss/master/bckhlwss.sh)
 ```

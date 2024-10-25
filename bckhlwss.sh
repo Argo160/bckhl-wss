@@ -154,21 +154,9 @@ WantedBy=multi-user.target
 EOL
 
     systemctl daemon-reload
-
     systemctl enable backhaul.service
-
     systemctl start backhaul.service
-
 }
-
-##########
-## IRAN ##
-##########
-#Kharej() {
-#    clear
-#        echo "This option is not implemented yet."
-#
-#}
 
 while true; do
 clear

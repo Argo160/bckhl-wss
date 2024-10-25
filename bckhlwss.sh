@@ -71,11 +71,12 @@ Iran() {
     else
         echo -e "\033[31mcertificate could not be issued! .\033[0m"  # Print in red
     fi
-
+    clear
     echo
     echo -e "\033[33mdownloading and extracting backhaul core.\033[0m" #yellow Color
     echo
     sleep 0.5
+    cd
     wget https://github.com/Musixal/Backhaul/releases/download/v0.6.2/backhaul_linux_amd64.tar.gz
     tar -xzf backhaul_linux_amd64.tar.gz
     if [ -f "/root/backhaul" ] && [ -x "/root/backhaul" ]; then
@@ -89,8 +90,49 @@ Iran() {
         echo
         sleep 0.5
     fi
+    clear
+    read -p "Tunnel Port : " Port
+    read -p "Token : " Token
+cat <<EOL > /root/config.toml    
+[server]
+bind_addr = "0.0.0.0:$Port"
+transport = "wss"
+token = "$Token" 
+channel_size = 2048
+keepalive_period = 75 
+nodelay = true 
+tls_cert = "/root/server.crt"      
+tls_key = "/root/server.key"
+sniffer = false
+sniffer_log = "/root/backhaul.json"
+log_level = "info"
+ports = [
+EOL
+    read -p "How Many Inbounds You gonna use in tunnel? : " Count
+    ports=()
+
+    # Loop to collect port numbers
+    for ((i = 1; i <= Count; i++)); do
+        read -p "Enter port number for inbound $i: " port
+        ports+=("$port")
+    done
+
+    # Append each port number, with a comma after each except the last
+    for ((i = 0; i < ${#ports[@]}; i++)); do
+        if (( i == ${#ports[@]} - 1 )); then
+            echo "  \"${ports[i]}\"" >> /root/config.toml
+        else
+            echo "  \"${ports[i]}\"," >> /root/config.toml
+        fi
+    done
+
+    # Close the array in config.toml
+    echo "]" >> /root/config.toml
+
+    # Confirm the output
+    echo -e "\e[32mConfiguration has been written to /root/config.toml.\e[0m"  # Green color for UP
+
     
-  
 }
 
 ##########

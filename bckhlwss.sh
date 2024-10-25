@@ -165,7 +165,7 @@ EOL
 ## IRAN ##
 ##########
 Kharej() {
-
+    clear
 }
 
 while true; do

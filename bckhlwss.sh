@@ -120,9 +120,9 @@ EOL
     # Append each port number, with a comma after each except the last
     for ((i = 0; i < ${#ports[@]}; i++)); do
         if (( i == ${#ports[@]} - 1 )); then
-            echo "  \"${ports[i]}\"" >> /root/config.toml
+            echo "\"${ports[i]}\"" >> /root/config.toml
         else
-            echo "  \"${ports[i]}\"," >> /root/config.toml
+            echo "\"${ports[i]}\"," >> /root/config.toml
         fi
     done
 
@@ -157,6 +157,76 @@ EOL
     systemctl enable backhaul.service
     systemctl start backhaul.service
 }
+
+
+Kharej() {
+    clear
+    echo
+    echo -e "\033[33mdownloading and extracting backhaul core.\033[0m" #yellow Color
+    echo
+    sleep 0.5
+    cd
+    wget https://github.com/Musixal/Backhaul/releases/download/v0.6.2/backhaul_linux_amd64.tar.gz
+    tar -xzf backhaul_linux_amd64.tar.gz
+    if [ -f "/root/backhaul" ] && [ -x "/root/backhaul" ]; then
+        echo
+        echo -e "\e[32mbackhaul core downloaded and extracted.\e[0m"  # Green color for UP
+        echo
+        sleep 0.5
+    else
+        echo
+        echo -e "\033[31mcould not download or extract the backhaul core!.\033[0m"  # Print in red
+        echo
+        sleep 0.5
+    fi
+    clear
+    read -p "Iran Domain : " domain
+    read -p "Tunnel Port : " Port
+    read -p "Token : " Token
+cat <<EOL > /root/config.toml
+[client]
+remote_addr = "$domain:$Port"
+edge_ip = "" 
+transport = "wss"
+token = "$Token" 
+connection_pool = 8
+aggressive_pool = true
+keepalive_period = 75
+dial_timeout = 10
+retry_interval = 3  
+nodelay = true 
+sniffer = false 
+sniffer_log = "/root/backhaul.json"
+log_level = "info"
+EOL
+    echo -e "\e[32mConfiguration has been written to /root/config.toml.\e[0m"  # Green color for UP
+    sleep 0.5
+    clear
+    echo
+    echo -e "\033[33mCreating Backhaul Service\033[0m" #yellow Color
+    echo
+    sleep 0.5
+cat <<EOL > /etc/systemd/system/backhaul.service
+[Unit]
+Description=Backhaul Reverse Tunnel Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/root/backhaul -c /root/config.toml
+Restart=always
+RestartSec=3
+LimitNOFILE=1048576
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+    systemctl daemon-reload
+    systemctl enable backhaul.service
+    systemctl start backhaul.service
+}
+
 
 while true; do
 clear

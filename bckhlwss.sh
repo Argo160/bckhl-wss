@@ -164,11 +164,11 @@ EOL
 ##########
 ## IRAN ##
 ##########
-Kharej() {
-    clear
-        echo "This option is not implemented yet."
-
-}
+#Kharej() {
+#    clear
+#        echo "This option is not implemented yet."
+#
+#}
 
 while true; do
 clear

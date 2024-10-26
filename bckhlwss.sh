@@ -235,7 +235,7 @@ clear
     echo "Stunnel Setup"
     echo "Menu:"
     echo "1  - Iran Core"
-    echo "2  - Iran config"
+    echo "2  - Add Iran Service"
     echo "3  - Kharej"
     echo "4  - Exit"
     read -p "Enter your choice: " choice

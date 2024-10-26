@@ -6,7 +6,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 iran-service() {
     clear
-    read -p "service Name :" service
+    read -p "service Name (2Letters country preffered) :" service
     read -p "Tunnel Port : " Port
     read -p "Token : " Token
 cat <<EOL > /root/config$service.toml    

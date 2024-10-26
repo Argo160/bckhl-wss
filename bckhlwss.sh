@@ -4,11 +4,79 @@ if [[ $EUID -ne 0 ]]; then
     echo "Use sudo -i to change user to root"
     exit 1
 fi
+iran-service() {
+    clear
+    read -p "service Name :" service
+    read -p "Tunnel Port : " Port
+    read -p "Token : " Token
+cat <<EOL > /root/config$service.toml    
+[server]
+bind_addr = "0.0.0.0:$Port"
+transport = "wss"
+token = "$Token" 
+channel_size = 2048
+keepalive_period = 75 
+nodelay = true 
+tls_cert = "/root/server.crt"      
+tls_key = "/root/server.key"
+sniffer = false
+sniffer_log = "/root/backhaul.json"
+log_level = "info"
+ports = [
+EOL
+    read -p "How Many Inbounds You gonna use in tunnel? : " Count
+    ports=()
 
+    # Loop to collect port numbers
+    for ((i = 1; i <= Count; i++)); do
+        read -p "Enter port number for inbound $i: " port
+        ports+=("$port")
+    done
+
+    # Append each port number, with a comma after each except the last
+    for ((i = 0; i < ${#ports[@]}; i++)); do
+        if (( i == ${#ports[@]} - 1 )); then
+            echo "\"${ports[i]}\"" >> /root/config$service.toml
+        else
+            echo "\"${ports[i]}\"," >> /root/config$service.toml
+        fi
+    done
+
+    # Close the array in config.toml
+    echo "]" >> /root/config$service.toml
+
+    # Confirm the output
+    echo -e "\e[32mConfiguration has been written to /root/config$service.toml.\e[0m"  # Green color for UP
+    sleep 0.5
+    clear
+    echo
+    echo -e "\033[33mCreating Backhaul Service\033[0m" #yellow Color
+    echo
+    sleep 0.5
+cat <<EOL > /etc/systemd/system/backhaul$service.service
+[Unit]
+Description=Backhaul Reverse Tunnel Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/root/backhaul -c /root/config$service.toml
+Restart=always
+RestartSec=3
+LimitNOFILE=1048576
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+    systemctl daemon-reload
+    systemctl enable backhaul$service.service
+    systemctl start backhaul$service.service
+}
 ##########
 ## IRAN ##
 ##########
-Iran() {
+Iran-core() {
     clear
     echo
     echo -e "\033[33mInstalling curl...\033[0m" #yellow Color
@@ -90,72 +158,6 @@ Iran() {
         echo
         sleep 0.5
     fi
-    clear
-    read -p "Tunnel Port : " Port
-    read -p "Token : " Token
-cat <<EOL > /root/config.toml    
-[server]
-bind_addr = "0.0.0.0:$Port"
-transport = "wss"
-token = "$Token" 
-channel_size = 2048
-keepalive_period = 75 
-nodelay = true 
-tls_cert = "/root/server.crt"      
-tls_key = "/root/server.key"
-sniffer = false
-sniffer_log = "/root/backhaul.json"
-log_level = "info"
-ports = [
-EOL
-    read -p "How Many Inbounds You gonna use in tunnel? : " Count
-    ports=()
-
-    # Loop to collect port numbers
-    for ((i = 1; i <= Count; i++)); do
-        read -p "Enter port number for inbound $i: " port
-        ports+=("$port")
-    done
-
-    # Append each port number, with a comma after each except the last
-    for ((i = 0; i < ${#ports[@]}; i++)); do
-        if (( i == ${#ports[@]} - 1 )); then
-            echo "\"${ports[i]}\"" >> /root/config.toml
-        else
-            echo "\"${ports[i]}\"," >> /root/config.toml
-        fi
-    done
-
-    # Close the array in config.toml
-    echo "]" >> /root/config.toml
-
-    # Confirm the output
-    echo -e "\e[32mConfiguration has been written to /root/config.toml.\e[0m"  # Green color for UP
-    sleep 0.5
-    clear
-    echo
-    echo -e "\033[33mCreating Backhaul Service\033[0m" #yellow Color
-    echo
-    sleep 0.5
-cat <<EOL > /etc/systemd/system/backhaul.service
-[Unit]
-Description=Backhaul Reverse Tunnel Service
-After=network.target
-
-[Service]
-Type=simple
-ExecStart=/root/backhaul -c /root/config.toml
-Restart=always
-RestartSec=3
-LimitNOFILE=1048576
-
-[Install]
-WantedBy=multi-user.target
-EOL
-
-    systemctl daemon-reload
-    systemctl enable backhaul.service
-    systemctl start backhaul.service
 }
 
 
@@ -232,14 +234,16 @@ while true; do
 clear
     echo "Stunnel Setup"
     echo "Menu:"
-    echo "1  - Iran"
-    echo "2  - Kharej"
-    echo "3  - Exit"
+    echo "1  - Iran Core"
+    echo "2  - Iran config"
+    echo "3  - Kharej"
+    echo "4  - Exit"
     read -p "Enter your choice: " choice
     case $choice in
-        1) Iran;;
-        2) Kharej;;
-        3) echo "Exiting..."; exit;;
+        1) Iran-core;;
+        2) iran-service;;
+        3) Kharej;;
+        4) echo "Exiting..."; exit;;
         *) echo "Invalid choice. Please enter a valid option.";;
     esac
 done

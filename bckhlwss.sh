@@ -145,7 +145,7 @@ Iran-core() {
     echo
     sleep 0.5
     cd
-    wget https://github.com/Musixal/Backhaul/releases/download/v0.6.2/backhaul_linux_amd64.tar.gz
+    wget https://github.com/Musixal/Backhaul/releases/download/v0.6.3/backhaul_linux_amd64.tar.gz
     tar -xzf backhaul_linux_amd64.tar.gz
     if [ -f "/root/backhaul" ] && [ -x "/root/backhaul" ]; then
         echo
@@ -168,7 +168,7 @@ Kharej() {
     echo
     sleep 0.5
     cd
-    wget https://github.com/Musixal/Backhaul/releases/download/v0.6.2/backhaul_linux_amd64.tar.gz
+    wget https://github.com/Musixal/Backhaul/releases/download/v0.6.3/backhaul_linux_amd64.tar.gz
     tar -xzf backhaul_linux_amd64.tar.gz
     if [ -f "/root/backhaul" ] && [ -x "/root/backhaul" ]; then
         echo

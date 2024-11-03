@@ -41,7 +41,7 @@ check_services() {
                 # Update the service status
                 service_status[$service_name]="$current_status"
                 echo "$status_message" >> "$log_dir/${service_name}_monitor_status.log"  # Log the status
-                python3 /root/py-script.py "$status_message"  # Send the status to Telegram
+                python3 /root/message.py "$status_message"  # Send the status to Telegram
 
                 # Call send_message.py if the service is disconnected and button not already sent
                 if [[ "$current_status" == "DISCONNECTED ❌" && -z "${button_sent[$service_name]}" ]]; then

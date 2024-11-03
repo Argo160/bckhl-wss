@@ -4,8 +4,8 @@ import subprocess
 import time
 
 # Replace with your bot token and chat ID
-TOKEN = '7285164926:AAEZBsVUPU402AwFnlipN5gofJoK9aI0VaY'
-CHAT_ID = '119566470'
+TOKEN = 'Your Token'
+CHAT_ID = 'Your Chat ID'
 BASE_URL = f'https://api.telegram.org/bot{TOKEN}/'
 
 def get_updates(offset=None):

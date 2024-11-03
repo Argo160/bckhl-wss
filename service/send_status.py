@@ -3,8 +3,8 @@ import json
 import sys
 
 # Replace with your bot token and chat ID
-TOKEN = '7285164926:AAEZBsVUPU402AwFnlipN5gofJoK9aI0VaY'
-CHAT_ID = '119566470'
+TOKEN = 'Your Token'
+CHAT_ID = 'Your chat ID'
 BASE_URL = f'https://api.telegram.org/bot{TOKEN}/'
 
 def send_message(service_name):

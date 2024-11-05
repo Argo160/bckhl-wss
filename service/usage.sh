@@ -1,7 +1,18 @@
 #!/bin/bash
 
-log_dir="/root/"  # Directory containing your log files
+# Load configuration from config.ini
+config_file="config.ini"
+log_dir=$(awk -F ' = ' '/log_dir/ {print $2}' "$config_file" | xargs)
+log_names=$(awk -F ' = ' '/log_name/ {print $2}' "$config_file" | tr -d '[],' | tr -s ' ')
+server_name=$(awk -F ' = ' '/server_name/ {print $2}' "$config_file" | xargs)
+enable_reconnect=$(awk -F ' = ' '/enable_reconnect/ {print $2}' "$config_file" | xargs)
+sleep_time=$(awk -F ' = ' '/sleep_time/ {print $2}' "$config_file" | xargs)  # Read sleep_time
 
+echo "Log Directory: $log_dir"
+echo "Log Names: $log_names"
+echo "Server Name: $server_name"
+echo "Enable Reconnect: $enable_reconnect"
+echo "Sleep Time: $sleep_time"
 # Define associative arrays to store the initial and current usage for each service
 declare -A initial_usage
 declare -A service_status
@@ -15,9 +26,9 @@ get_usage() {
 
 # Function to check each log file and update the service status
 check_services() {
-    for log_file in "$log_dir"/*.json; do
+    for service_name in $log_names; do
+        log_file="${log_dir}/${service_name}.json"
         if [[ -f $log_file ]]; then
-            service_name=$(basename "$log_file" .json)  # Get the service name from the filename
             current_usage=$(get_usage "$log_file")
 
             # Set the initial usage if not already set
@@ -41,12 +52,13 @@ check_services() {
                 # Update the service status
                 service_status[$service_name]="$current_status"
                 echo "$status_message" >> "$log_dir/${service_name}_monitor_status.log"  # Log the status
-                python3 /root/message.py "$status_message"  # Send the status to Telegram
+                python3 /root/message.py "$status_message" "$server_name"  # Send the status to Telegram
 
-                # Call send_message.py if the service is disconnected and button not already sent
+                # Call reconnect.sh if the service is disconnected and enable_reconnect is true
                 if [[ "$current_status" == "DISCONNECTED ❌" && -z "${button_sent[$service_name]}" ]]; then
-                    python3 /root/send_status.py "$service_name"  # Send the message with the button
-                    echo "$service_name"
+                    if [[ "$enable_reconnect" == "true" ]]; then
+                        bash reconnect.sh "$service_name"  # Pass service_name to reconnect.sh
+                    fi
                     button_sent[$service_name]=true  # Track that button was sent
                 elif [[ "$current_status" == "CONNECTED ✅" && -n "${button_sent[$service_name]}" ]]; then
                     unset button_sent[$service_name]  # Reset button sent if reconnected
@@ -62,10 +74,9 @@ check_services() {
 check() {
     while true; do
         check_services  # Check all services
-        sleep 60  # Checks every 60 seconds
+        sleep "$sleep_time"  # Use the configured sleep time
     done
 }
 
 # Start checking
-python3 button_listener.py &
 check

@@ -1,14 +1,24 @@
+
 import requests
 import sys
+import configparser
 
-BOT_TOKEN = 'Your Token'
-CHAT_ID = 'Your Chat ID'
+# Load configuration
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+# Replace with your bot token and chat ID from config
+BOT_TOKEN = config['DEFAULT']['TOKEN']
+CHAT_ID = config['DEFAULT']['CHAT_ID']
+
+# Unique server name passed as an argument
+SERVER_NAME = sys.argv[2] if len(sys.argv) > 2 else 'default_server'
 
 def send_message(message):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     payload = {
         'chat_id': CHAT_ID,
-        'text': message
+        'text': f"{SERVER_NAME}: {message}"
     }
     response = requests.post(url, data=payload)
     return response.json()

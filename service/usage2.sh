@@ -47,7 +47,7 @@ check_services() {
                 # Update the service status
                 service_status[$service_name]="$current_status"
                 echo "$status_message" >> "$log_dir/${service_name}_monitor_status.log"  # Log the status
-                python3 /root/message_modified.py "$status_message" "$server_name"  # Send the status to Telegram
+                python3 /root/message.py "$status_message" "$server_name"  # Send the status to Telegram
 
                 # Call reconnect.sh if the service is disconnected and enable_reconnect is true
                 if [[ "$current_status" == "DISCONNECTED ❌" && -z "${button_sent[$service_name]}" ]]; then

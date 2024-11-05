@@ -6,6 +6,7 @@ log_dir=$(awk -F ' = ' '/log_dir/ {print $2}' "$config_file" | xargs)
 log_names=$(awk -F ' = ' '/log_name/ {print $2}' "$config_file" | tr -d '[],' | tr -s ' ')
 server_name=$(awk -F ' = ' '/server_name/ {print $2}' "$config_file" | xargs)
 enable_reconnect=$(awk -F ' = ' '/enable_reconnect/ {print $2}' "$config_file" | xargs)
+sleep_time=$(awk -F ' = ' '/sleep_time/ {print $2}' "$config_file" | xargs)  # Read sleep_time
 
 # Define associative arrays to store the initial and current usage for each service
 declare -A initial_usage
@@ -68,7 +69,7 @@ check_services() {
 check() {
     while true; do
         check_services  # Check all services
-        sleep 60  # Checks every 60 seconds
+        sleep "$sleep_time"  # Use the configured sleep time
     done
 }
 

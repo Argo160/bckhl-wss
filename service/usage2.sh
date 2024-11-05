@@ -4,8 +4,8 @@
 config_file="config.ini"
 log_dir=$(awk -F ' = ' '/log_dir/ {print $2}' "$config_file" | xargs)
 log_names=$(awk -F ' = ' '/log_name/ {print $2}' "$config_file" | tr -d '[],' | tr -s ' ')
-
-server_name="Server1"  # Set your unique server identifier here
+server_name=$(awk -F ' = ' '/server_name/ {print $2}' "$config_file" | xargs)
+enable_reconnect=$(awk -F ' = ' '/enable_reconnect/ {print $2}' "$config_file" | xargs)
 
 # Define associative arrays to store the initial and current usage for each service
 declare -A initial_usage
@@ -48,9 +48,11 @@ check_services() {
                 echo "$status_message" >> "$log_dir/${service_name}_monitor_status.log"  # Log the status
                 python3 /root/message_modified.py "$status_message" "$server_name"  # Send the status to Telegram
 
-                # Call reconnect.sh if the service is disconnected
+                # Call reconnect.sh if the service is disconnected and enable_reconnect is true
                 if [[ "$current_status" == "DISCONNECTED ❌" && -z "${button_sent[$service_name]}" ]]; then
-                    bash reconnect.sh "$service_name"  # Pass service_name to reconnect.sh
+                    if [[ "$enable_reconnect" == "true" ]]; then
+                        bash reconnect.sh "$service_name"  # Pass service_name to reconnect.sh
+                    fi
                     button_sent[$service_name]=true  # Track that button was sent
                 elif [[ "$current_status" == "CONNECTED ✅" && -n "${button_sent[$service_name]}" ]]; then
                     unset button_sent[$service_name]  # Reset button sent if reconnected
